@@ -1,0 +1,11 @@
+flowchart LR
+    U[User Task] --> R[AgentRuntime]
+    R --> P[Model Provider]
+    P -->|tool decision| V[Tool Registry]
+    V --> F[Fault Injector]
+    F --> X[Bounded Tool Execution]
+    X --> T[SQLite Trace Store]
+    T --> W[Trace Viewer / Replay]
+    T --> E[Independent Reliability Grader]
+    E --> B[Versioned Batch Comparison]
+    P -->|final report| R

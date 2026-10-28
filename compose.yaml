@@ -1,0 +1,13 @@
+services:
+  agenttrace:
+    build: .
+    environment:
+      AGENTTRACE_MODE: mock
+      AGENTTRACE_DB_PATH: /data/agenttrace.sqlite3
+    ports:
+      - "127.0.0.1:8001:8001"
+    volumes:
+      - agenttrace-data:/data
+    restart: "no"
+volumes:
+  agenttrace-data:
