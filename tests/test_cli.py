@@ -1,4 +1,7 @@
 import asyncio
+import io
+import json
+import sys
 
 from agenttrace import cli
 
@@ -40,3 +43,24 @@ def test_failure_benchmark_strict_evaluation_error_returns_nonzero(monkeypatch):
     monkeypatch.setattr(cli, "run_failure_benchmark", fake_run)
     monkeypatch.setattr(cli, "_store", lambda: object())
     assert asyncio.run(cli._failure_benchmark(["CF-04-B"], "offline", strict=True)) == 1
+
+
+def test_failure_benchmark_json_is_loadable_with_cp1252_stdout(monkeypatch):
+    class Cp1252Stdout(io.StringIO):
+        encoding = "cp1252"
+
+        def write(self, value):
+            value.encode(self.encoding)
+            return super().write(value)
+
+    async def fake_run(*args, **kwargs):
+        report = _report(_row("CF-04-B"))
+        report["message"] = "中文评测结果"
+        return report
+
+    stream = Cp1252Stdout()
+    monkeypatch.setattr(cli, "run_failure_benchmark", fake_run)
+    monkeypatch.setattr(cli, "_store", lambda: object())
+    monkeypatch.setattr(sys, "stdout", stream)
+    assert asyncio.run(cli._failure_benchmark(["CF-04-B"], "offline", strict=True)) == 0
+    assert json.loads(stream.getvalue())["message"] == "中文评测结果"

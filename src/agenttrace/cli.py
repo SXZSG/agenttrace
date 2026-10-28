@@ -24,14 +24,14 @@ async def _demo(task: str) -> int:
     store = _store()
     runtime = AgentRuntime(provider=provider_from_env(), tools=build_incident_registry(), store=store)
     run = await runtime.run(task)
-    print(json.dumps({"run": run.model_dump(mode="json"), "trace": [e.model_dump(mode="json") for e in store.get_events(run.run_id)]}, indent=2, ensure_ascii=False))
+    print(json.dumps({"run": run.model_dump(mode="json"), "trace": [e.model_dump(mode="json") for e in store.get_events(run.run_id)]}, indent=2, ensure_ascii=True))
     return 0 if run.status == "completed" else 1
 
 
 async def _evaluate() -> int:
     store = _store()
     report = await run_smoke_evaluation(store)
-    print(json.dumps(report, indent=2, ensure_ascii=False))
+    print(json.dumps(report, indent=2, ensure_ascii=True))
     return 0 if report["passed_cases"] == report["total_cases"] else 1
 
 
@@ -40,7 +40,7 @@ async def _failure_benchmark(scenario_ids: list[str] | None, mode: str, strict: 
     provider = provider_from_env() if mode == "server" else None
     report = await run_failure_benchmark(store, config=AgentConfig(mode=mode),
                                          scenario_ids=scenario_ids, provider=provider)
-    print(json.dumps(report, indent=2, ensure_ascii=False))
+    print(json.dumps(report, indent=2, ensure_ascii=True))
     if not strict:
         return 0
     expected = scenario_ids if scenario_ids is not None else [row["scenario_id"] for row in report["results"]]
@@ -81,7 +81,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "failure-benchmark":
         return asyncio.run(_failure_benchmark(args.scenario_ids, args.mode, args.strict))
     if args.command == "compare-batches":
-        print(json.dumps(compare_batches(_store(), args.baseline, args.candidate), indent=2, ensure_ascii=False))
+        print(json.dumps(compare_batches(_store(), args.baseline, args.candidate), indent=2, ensure_ascii=True))
         return 0
     return 2
 
